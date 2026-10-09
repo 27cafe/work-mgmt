@@ -20,15 +20,23 @@
   <header class="bg-indigo-700 text-white shadow-md no-print">
     <div class="max-w-6xl mx-auto px-4 py-4 flex flex-col sm:flex-row justify-between items-center gap-4">
       <h1 class="text-xl font-bold flex items-center gap-2">
-        <i class="fa-solid fa-calculator me-2"></i>勤務管理 & 概算給与計算
+        <i class="fa-solid fa-calculator me-2"></i>勤務管理 & 給与管理アプリ
       </h1>
+      
       <div class="flex items-center gap-2">
-        <button id="btn-prev" class="bg-indigo-800 hover:bg-indigo-900 px-3 py-1.5 rounded transition font-medium text-sm flex items-center gap-1">
-          <i class="fa-solid fa-chevron-left"></i> 前月
-        </button>
-        <input type="month" id="month-picker" class="bg-indigo-800 text-white font-semibold px-3 py-1 rounded border border-indigo-600 focus:outline-none text-sm cursor-pointer">
-        <button id="btn-next" class="bg-indigo-800 hover:bg-indigo-900 px-3 py-1.5 rounded transition font-medium text-sm flex items-center gap-1">
-          次月 <i class="fa-solid fa-chevron-right"></i>
+        <!-- ページ切り替えタブ -->
+        <div class="flex bg-indigo-800/80 p-1 rounded-lg">
+          <button id="tab-btn-calendar" class="px-3 py-1.5 rounded-md text-xs sm:text-sm font-bold transition bg-white text-indigo-900 shadow">
+            <i class="fa-solid fa-calendar-days me-1"></i>月間カレンダー
+          </button>
+          <button id="tab-btn-annual" class="px-3 py-1.5 rounded-md text-xs sm:text-sm font-bold transition text-indigo-100 hover:text-white">
+            <i class="fa-solid fa-table-list me-1"></i>年間給与管理表
+          </button>
+        </div>
+
+        <!-- 使い方ヘルプボタン -->
+        <button id="btn-open-help" class="bg-indigo-800 hover:bg-indigo-900 text-indigo-100 hover:text-white px-3 py-1.5 rounded-lg text-xs sm:text-sm font-bold border border-indigo-500/50 transition flex items-center gap-1.5">
+          <i class="fa-solid fa-circle-question text-amber-300"></i> 使い方
         </button>
       </div>
     </div>
@@ -36,219 +44,398 @@
 
   <main class="max-w-6xl mx-auto px-4 mt-6">
 
-    <!-- 基本設定パネル -->
-    <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200 mb-6 print-shadow-none">
-      <h2 class="text-base font-bold text-slate-700 mb-4 flex items-center gap-2 border-b pb-2">
-        <i class="fa-solid fa-sliders text-indigo-600"></i> 基本情報・条件設定
-      </h2>
+    <!-- ========================================== -->
+    <!-- タブ 1: カレンダー＆月間給与計算画面 -->
+    <!-- ========================================== -->
+    <div id="page-calendar" class="space-y-6">
       
-      <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
-        <div>
-          <label class="block text-xs font-semibold text-slate-500 mb-1">基本時給 (円)</label>
-          <div class="relative">
-            <span class="absolute left-2.5 top-2 text-slate-400 text-xs">¥</span>
-            <input type="number" id="hourly-rate" value="1260" min="0" step="10" class="w-full pl-6 pr-2 py-1.5 border rounded-lg focus:ring-2 focus:ring-indigo-500 text-sm font-semibold text-slate-800">
-          </div>
-        </div>
-        <div>
-          <label class="block text-xs font-semibold text-slate-500 mb-1">休日割増倍率 (土日)</label>
-          <input type="number" id="holiday-rate" value="1.35" min="1" max="3" step="0.01" class="w-full px-2 py-1.5 border rounded-lg focus:ring-2 focus:ring-indigo-500 text-sm font-semibold text-slate-800">
-        </div>
-        <div>
-          <label class="block text-xs font-semibold text-slate-500 mb-1">雇用保険料率</label>
-          <input type="number" id="insurance-rate" value="0.005" min="0" max="0.1" step="0.001" class="w-full px-2 py-1.5 border rounded-lg focus:ring-2 focus:ring-indigo-500 text-sm font-semibold text-slate-800">
+      <!-- 月選択ヘッダー -->
+      <div class="bg-white p-3 rounded-xl shadow-sm border border-slate-200 flex justify-between items-center no-print">
+        <span class="text-xs font-bold text-slate-500">対象月選択:</span>
+        <div class="flex items-center gap-2">
+          <button id="btn-prev" class="bg-indigo-50 hover:bg-indigo-100 text-indigo-700 px-3 py-1.5 rounded-lg transition font-medium text-xs flex items-center gap-1 border border-indigo-200">
+            <i class="fa-solid fa-chevron-left"></i> 前月
+          </button>
+          <input type="month" id="month-picker" class="bg-slate-50 text-slate-800 font-bold px-3 py-1 rounded-lg border border-slate-300 focus:outline-none text-sm cursor-pointer">
+          <button id="btn-next" class="bg-indigo-50 hover:bg-indigo-100 text-indigo-700 px-3 py-1.5 rounded-lg transition font-medium text-xs flex items-center gap-1 border border-indigo-200">
+            次月 <i class="fa-solid fa-chevron-right"></i>
+          </button>
         </div>
       </div>
 
-      <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        <!-- 交通費計算エリア -->
-        <div class="lg:col-span-2 bg-indigo-50/50 p-3.5 rounded-xl border border-indigo-100">
-          <div class="flex justify-between items-center mb-2">
-            <span class="text-xs font-bold text-indigo-900 flex items-center gap-1.5">
-              <i class="fa-solid fa-car text-indigo-600"></i> 交通費の距離計算 & 上限設定
-            </span>
-            <span class="text-[11px] text-indigo-600 font-medium" id="calc-transport-day-pay-label">1日あたり: 524円</span>
-          </div>
-
-          <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5 mb-2.5">
-            <div>
-              <label class="block text-[11px] font-semibold text-slate-600 mb-1">片道距離 (km)</label>
-              <input type="number" id="one-way-km" value="10" min="0" step="0.1" class="w-full px-2 py-1 border rounded bg-white text-xs font-semibold focus:ring-2 focus:ring-indigo-500">
-            </div>
-            <div>
-              <label class="block text-[11px] font-semibold text-slate-600 mb-1">距離単価 (円/km)</label>
-              <input type="number" id="km-rate" value="20" min="0" step="1" class="w-full px-2 py-1 border rounded bg-white text-xs font-semibold focus:ring-2 focus:ring-indigo-500">
-            </div>
-            <div>
-              <label class="block text-[11px] font-semibold text-slate-600 mb-1">出勤日数 (カレンダー連動)</label>
-              <input type="number" id="transport-days" value="0" min="0" readonly class="w-full px-2 py-1 border rounded bg-slate-100 text-xs font-bold text-slate-700">
+      <!-- 基本設定パネル -->
+      <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200 print-shadow-none">
+        <h2 class="text-base font-bold text-slate-700 mb-4 flex items-center gap-2 border-b pb-2">
+          <i class="fa-solid fa-sliders text-indigo-600"></i> 基本情報・条件設定
+        </h2>
+        
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
+          <div>
+            <label class="block text-xs font-semibold text-slate-500 mb-1">基本時給 (円)</label>
+            <div class="relative">
+              <span class="absolute left-2.5 top-2 text-slate-400 text-xs">¥</span>
+              <input type="number" id="hourly-rate" value="1260" min="0" step="10" class="w-full pl-6 pr-2 py-1.5 border rounded-lg focus:ring-2 focus:ring-indigo-500 text-sm font-semibold text-slate-800">
             </div>
           </div>
-
-          <div class="bg-white p-2.5 rounded-lg border border-indigo-100 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
-            <div class="flex items-center gap-2">
-              <input type="checkbox" id="enable-cap" checked class="w-4 h-4 text-indigo-600 rounded focus:ring-indigo-500 cursor-pointer">
-              <label for="enable-cap" class="text-xs font-bold text-slate-700 cursor-pointer">上限ストッパーを有効にする</label>
-            </div>
-            <div class="flex items-center gap-1.5 text-xs">
-              <span class="text-slate-500 font-medium">契約上限日数:</span>
-              <input type="number" id="max-days-cap" value="16" min="1" max="31" class="w-16 px-1.5 py-0.5 border rounded text-center font-bold text-indigo-900 focus:ring-1 focus:ring-indigo-500">
-              <span class="text-slate-500">日</span>
-              <span class="text-slate-400 font-normal ml-1">(上限金額: <span id="max-amount-label">6,400</span> 円)</span>
-            </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-500 mb-1">休日割増倍率 (土日)</label>
+            <input type="number" id="holiday-rate" value="1.35" min="1" max="3" step="0.01" class="w-full px-2 py-1.5 border rounded-lg focus:ring-2 focus:ring-indigo-500 text-sm font-semibold text-slate-800">
           </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-500 mb-1">雇用保険料率</label>
+            <input type="number" id="insurance-rate" value="0.005" min="0" max="0.1" step="0.001" class="w-full px-2 py-1.5 border rounded-lg focus:ring-2 focus:ring-indigo-500 text-sm font-semibold text-slate-800">
+          </div>
+        </div>
 
-          <div class="mt-2.5 pt-2 border-t border-indigo-100 flex justify-between items-center text-xs">
-            <div class="flex items-center gap-2">
-              <span class="text-slate-600 font-medium">支給予定交通費:</span>
-              <span id="cap-status-badge" class="hidden text-[10px] bg-amber-100 text-amber-800 font-bold px-2 py-0.5 rounded-full border border-amber-200">
-                <i class="fa-solid fa-shield-halved me-1"></i>上限適用中
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+          <!-- 交通費計算エリア -->
+          <div class="lg:col-span-2 bg-indigo-50/50 p-3.5 rounded-xl border border-indigo-100">
+            <div class="flex justify-between items-center mb-2">
+              <span class="text-xs font-bold text-indigo-900 flex items-center gap-1.5">
+                <i class="fa-solid fa-car text-indigo-600"></i> 交通費の距離計算 & 上限設定
               </span>
+              <span class="text-[11px] text-indigo-600 font-medium" id="calc-transport-day-pay-label">1日あたり: 524円</span>
             </div>
-            <div class="flex items-center gap-1">
-              <span class="text-xs text-indigo-500 font-bold">¥</span>
-              <span id="monthly-transport-display" class="w-28 px-2 py-1 border border-indigo-200 rounded font-extrabold text-indigo-900 text-right bg-indigo-50/50 block">0</span>
+
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5 mb-2.5">
+              <div>
+                <label class="block text-[11px] font-semibold text-slate-600 mb-1">片道距離 (km)</label>
+                <input type="number" id="one-way-km" value="10" min="0" step="0.1" class="w-full px-2 py-1 border rounded bg-white text-xs font-semibold focus:ring-2 focus:ring-indigo-500">
+              </div>
+              <div>
+                <label class="block text-[11px] font-semibold text-slate-600 mb-1">距離単価 (円/km)</label>
+                <input type="number" id="km-rate" value="20" min="0" step="1" class="w-full px-2 py-1 border rounded bg-white text-xs font-semibold focus:ring-2 focus:ring-indigo-500">
+              </div>
+              <div>
+                <label class="block text-[11px] font-semibold text-slate-600 mb-1">出勤日数 (カレンダー連動)</label>
+                <input type="number" id="transport-days" value="0" min="0" readonly class="w-full px-2 py-1 border rounded bg-slate-100 text-xs font-bold text-slate-700">
+              </div>
+            </div>
+
+            <div class="bg-white p-2.5 rounded-lg border border-indigo-100 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+              <div class="flex items-center gap-2">
+                <input type="checkbox" id="enable-cap" checked class="w-4 h-4 text-indigo-600 rounded focus:ring-indigo-500 cursor-pointer">
+                <label for="enable-cap" class="text-xs font-bold text-slate-700 cursor-pointer">上限ストッパーを有効にする</label>
+              </div>
+              <div class="flex items-center gap-1.5 text-xs">
+                <span class="text-slate-500 font-medium">契約上限日数:</span>
+                <input type="number" id="max-days-cap" value="16" min="1" max="31" class="w-16 px-1.5 py-0.5 border rounded text-center font-bold text-indigo-900 focus:ring-1 focus:ring-indigo-500">
+                <span class="text-slate-500">日</span>
+                <span class="text-slate-400 font-normal ml-1">(上限金額: <span id="max-amount-label">6,400</span> 円)</span>
+              </div>
+            </div>
+
+            <div class="mt-2.5 pt-2 border-t border-indigo-100 flex justify-between items-center text-xs">
+              <div class="flex items-center gap-2">
+                <span class="text-slate-600 font-medium">支給予定交通費:</span>
+                <span id="cap-status-badge" class="hidden text-[10px] bg-amber-100 text-amber-800 font-bold px-2 py-0.5 rounded-full border border-amber-200">
+                  <i class="fa-solid fa-shield-halved me-1"></i>上限適用中
+                </span>
+              </div>
+              <div class="flex items-center gap-1">
+                <span class="text-xs text-indigo-500 font-bold">¥</span>
+                <span id="monthly-transport-display" class="w-28 px-2 py-1 border border-indigo-200 rounded font-extrabold text-indigo-900 text-right bg-indigo-50/50 block">0</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- 勤務区分時間設定 ＆ 残業時間設定 -->
+          <div class="bg-slate-50 p-3.5 rounded-xl border border-slate-200 flex flex-col justify-between space-y-3">
+            <div>
+              <label class="block text-xs font-semibold text-slate-500 mb-1.5">勤務区分ごとの時間設定 (時間)</label>
+              <div class="grid grid-cols-3 gap-2">
+                <div>
+                  <span class="text-[11px] text-indigo-700 font-bold block mb-0.5">フル</span>
+                  <input type="number" id="hours-full" value="5.5" min="0" max="24" step="0.5" class="w-full px-2 py-1 border rounded text-xs text-center font-semibold">
+                </div>
+                <div>
+                  <span class="text-[11px] text-blue-700 font-bold block mb-0.5">午前</span>
+                  <input type="number" id="hours-am" value="3" min="0" max="24" step="0.5" class="w-full px-2 py-1 border rounded text-xs text-center font-semibold">
+                </div>
+                <div>
+                  <span class="text-[11px] text-emerald-700 font-bold block mb-0.5">午後</span>
+                  <input type="number" id="hours-pm" value="2.5" min="0" max="24" step="0.5" class="w-full px-2 py-1 border rounded text-xs text-center font-semibold">
+                </div>
+              </div>
+            </div>
+
+            <div class="pt-2 border-t border-slate-200">
+              <label class="block text-xs font-semibold text-slate-600 mb-1">当月の総残業時間 (時間)</label>
+              <div class="flex items-center gap-2">
+                <input type="number" id="overtime-hours" value="0" min="0" step="0.5" class="w-full px-2 py-1 border border-amber-300 rounded text-xs font-bold text-amber-900 bg-amber-50/30 focus:ring-2 focus:ring-amber-500">
+                <span class="text-xs text-slate-500 font-medium whitespace-nowrap">時間</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 給与計算サマリーカード -->
+      <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-7 gap-3">
+        <div class="bg-white p-3 rounded-xl shadow-sm border border-slate-200">
+          <span class="text-xs font-semibold text-slate-500 block">出勤日数 / 総時間</span>
+          <div class="mt-1 flex items-baseline gap-1">
+            <span id="stat-days" class="text-lg font-extrabold text-slate-800">0</span>
+            <span class="text-xs text-slate-500">日</span>
+            <span class="text-slate-300 mx-0.5">/</span>
+            <span id="stat-hours" class="text-base font-bold text-slate-700">0</span>
+            <span class="text-xs text-slate-500">h</span>
+          </div>
+          <div class="mt-1.5 text-[10px] text-slate-400">
+            フル:<span id="stat-count-full">0</span> AM:<span id="stat-count-am">0</span> PM:<span id="stat-count-pm">0</span>
+          </div>
+        </div>
+
+        <div class="bg-white p-3 rounded-xl shadow-sm border border-slate-200">
+          <span class="text-xs font-semibold text-slate-500 block">基本給 (土日割増込)</span>
+          <div class="mt-1">
+            <span class="text-xs text-slate-400">¥</span>
+            <span id="stat-base-pay" class="text-lg font-extrabold text-slate-800">0</span>
+          </div>
+          <div class="mt-1.5 text-[10px] text-slate-400">
+            平日給 + 休日割増(1.35)
+          </div>
+        </div>
+
+        <div class="bg-white p-3 rounded-xl shadow-sm border border-slate-200">
+          <span class="text-xs font-semibold text-amber-700 block">残業手当 (通常時給)</span>
+          <div class="mt-1">
+            <span class="text-xs text-amber-500 font-bold">+¥</span>
+            <span id="stat-overtime-pay" class="text-lg font-extrabold text-amber-900">0</span>
+          </div>
+          <div class="mt-1.5 text-[10px] text-slate-400">
+            <span id="stat-overtime-hours-label">0</span>h × 通常時給
+          </div>
+        </div>
+
+        <div class="bg-white p-3 rounded-xl shadow-sm border border-slate-200">
+          <span class="text-xs font-semibold text-slate-500 block">月額交通費</span>
+          <div class="mt-1">
+            <span class="text-xs text-slate-400">+¥</span>
+            <span id="stat-transport" class="text-lg font-extrabold text-slate-800">0</span>
+          </div>
+          <div class="mt-1.5 text-[10px] text-slate-400">
+            距離換算 (自動計算)
+          </div>
+        </div>
+
+        <div class="bg-indigo-50/60 p-3 rounded-xl shadow-sm border border-indigo-200 col-span-2 sm:col-span-1">
+          <div class="flex justify-between items-center">
+            <span class="text-xs font-bold text-indigo-900 block">総基本給 (計)</span>
+            <button id="btn-sync-to-annual" title="この金額を年間給与表へ反映" class="text-[10px] bg-indigo-600 text-white px-1.5 py-0.5 rounded hover:bg-indigo-700 no-print">
+              年間表へ転送
+            </button>
+          </div>
+          <div class="mt-1">
+            <span class="text-xs text-indigo-600 font-bold">¥</span>
+            <span id="stat-gross-pay" class="text-lg font-black text-indigo-900">0</span>
+          </div>
+          <div class="mt-1.5 text-[10px] text-indigo-700">
+            基本＋残業＋交通費
+          </div>
+        </div>
+
+        <div class="bg-white p-3 rounded-xl shadow-sm border border-slate-200">
+          <span class="text-xs font-semibold text-rose-500 block">雇用保険料 (控除)</span>
+          <div class="mt-1">
+            <span class="text-xs text-rose-400">-¥</span>
+            <span id="stat-insurance" class="text-lg font-extrabold text-rose-600">0</span>
+          </div>
+          <div class="mt-1.5 text-[10px] text-slate-400">
+            総基本給 × <span id="stat-insurance-rate-label">0.005</span>
+          </div>
+        </div>
+
+        <div class="bg-indigo-600 text-white p-3 rounded-xl shadow-md border border-indigo-700 col-span-2 sm:col-span-1 lg:col-span-1">
+          <span class="text-xs font-medium text-indigo-100 block">差引支給概算額</span>
+          <div class="mt-1">
+            <span class="text-xs text-indigo-200">¥</span>
+            <span id="stat-total-pay" class="text-xl font-black">0</span>
+          </div>
+          <div class="mt-1.5 text-[10px] text-indigo-200">
+            総基本給 － 雇用保険料
+          </div>
+        </div>
+      </div>
+
+      <!-- カレンダーセクション -->
+      <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden print-shadow-none">
+        <div class="p-4 bg-slate-50 border-b border-slate-200 flex justify-between items-center">
+          <h3 id="calendar-title" class="font-bold text-slate-800 text-lg">2026年10月</h3>
+          <span class="text-xs text-slate-500">※ 土日の勤務は時給1.35倍で自動計算されます</span>
+        </div>
+
+        <div class="p-2 sm:p-4">
+          <div class="grid grid-cols-7 text-center font-bold text-xs sm:text-sm py-2 mb-1 border-b">
+            <div class="text-red-500">日</div>
+            <div class="text-slate-700">月</div>
+            <div class="text-slate-700">火</div>
+            <div class="text-slate-700">水</div>
+            <div class="text-slate-700">木</div>
+            <div class="text-slate-700">金</div>
+            <div class="text-blue-500">土</div>
+          </div>
+
+          <div id="calendar-days" class="grid grid-cols-7 gap-1 sm:gap-2">
+            <!-- JSで自動生成 -->
+          </div>
+        </div>
+      </div>
+
+      <!-- 一括操作 & 出力パネル -->
+      <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200 print-shadow-none">
+        <h2 class="text-base font-bold text-slate-700 mb-3 flex items-center gap-2 border-b pb-2">
+          <i class="fa-solid fa-wand-magic-sparkles text-indigo-600"></i> 一括操作 & データ出力
+        </h2>
+        <div class="flex flex-col sm:flex-row justify-between items-center gap-3 no-print">
+          <div class="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+            <button id="btn-fill-weekdays" class="bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-medium py-2 px-4 rounded-lg border border-indigo-200 text-xs sm:text-sm transition flex items-center justify-center gap-2">
+              <i class="fa-solid fa-calendar-check"></i> 平日を一括でフルタイムにする
+            </button>
+            <button id="btn-clear-month" class="bg-slate-50 hover:bg-slate-100 text-slate-600 font-medium py-2 px-4 rounded-lg border border-slate-200 text-xs sm:text-sm transition flex items-center justify-center gap-2">
+              <i class="fa-solid fa-rotate-left"></i> 当月の入力をリセット
+            </button>
+          </div>
+
+          <div class="flex items-center gap-2 w-full sm:w-auto">
+            <button id="btn-export-csv" class="flex-1 sm:flex-none bg-emerald-600 hover:bg-emerald-700 text-white font-medium py-2 px-4 rounded-lg text-xs sm:text-sm transition flex items-center justify-center gap-1.5">
+              <i class="fa-solid fa-file-csv"></i> CSV出力
+            </button>
+            <button id="btn-print" onclick="window.print()" class="flex-1 sm:flex-none bg-slate-700 hover:bg-slate-800 text-white font-medium py-2 px-4 rounded-lg text-xs sm:text-sm transition flex items-center justify-center gap-1.5">
+              <i class="fa-solid fa-print"></i> 印刷 / PDF
+            </button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ========================================== -->
+    <!-- タブ 2: 年間給与管理表 画面 -->
+    <!-- ========================================== -->
+    <div id="page-annual" class="hidden space-y-6">
+      
+      <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200 print-shadow-none">
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b pb-4 mb-4">
+          <div>
+            <h2 class="text-lg font-bold text-slate-800 flex items-center gap-2">
+              <i class="fa-solid fa-table-list text-indigo-600"></i> 年間給与管理表 (扶養上限チェック)
+            </h2>
+            <p class="text-xs text-slate-500 mt-1">各月の「総基本給（基本給＋残業＋交通費）」の累計を一覧管理できます。</p>
+          </div>
+
+          <div class="flex items-center gap-3">
+            <div class="flex items-center gap-1.5">
+              <label class="text-xs font-bold text-slate-600">対象年:</label>
+              <select id="annual-year-select" class="bg-slate-50 font-bold border rounded-lg px-3 py-1.5 text-sm focus:ring-2 focus:ring-indigo-500 cursor-pointer">
+                <!-- JSで生成 -->
+              </select>
+            </div>
+            <div class="flex items-center gap-1.5">
+              <label class="text-xs font-bold text-slate-600">目標扶養上限:</label>
+              <select id="annual-target-cap" class="bg-slate-50 font-bold border rounded-lg px-2 py-1.5 text-sm focus:ring-2 focus:ring-indigo-500 cursor-pointer">
+                <option value="1300000" selected>130万円</option>
+                <option value="1030000">103万円</option>
+                <option value="1500000">150万円</option>
+              </select>
             </div>
           </div>
         </div>
 
-        <!-- 勤務区分時間設定 -->
-        <div class="bg-slate-50 p-3.5 rounded-xl border border-slate-200 flex flex-col justify-between">
-          <label class="block text-xs font-semibold text-slate-500 mb-2">勤務区分ごとの時間設定 (時間)</label>
-          <div class="grid grid-cols-3 gap-2">
-            <div>
-              <span class="text-xs text-indigo-700 font-bold block mb-1">フル</span>
-              <input type="number" id="hours-full" value="5.5" min="0" max="24" step="0.5" class="w-full px-2 py-1.5 border rounded text-sm text-center font-semibold">
-            </div>
-            <div>
-              <span class="text-xs text-blue-700 font-bold block mb-1">午前</span>
-              <input type="number" id="hours-am" value="3" min="0" max="24" step="0.5" class="w-full px-2 py-1.5 border rounded text-sm text-center font-semibold">
-            </div>
-            <div>
-              <span class="text-xs text-emerald-700 font-bold block mb-1">午後</span>
-              <input type="number" id="hours-pm" value="2.5" min="0" max="24" step="0.5" class="w-full px-2 py-1.5 border rounded text-sm text-center font-semibold">
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- 給与計算サマリーカード -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-3 mb-6">
-      <div class="bg-white p-3.5 rounded-xl shadow-sm border border-slate-200">
-        <span class="text-xs font-semibold text-slate-500 block">出勤日数 / 総時間</span>
-        <div class="mt-1 flex items-baseline gap-1">
-          <span id="stat-days" class="text-xl font-extrabold text-slate-800">0</span>
-          <span class="text-xs text-slate-500">日</span>
-          <span class="text-slate-300 mx-1">/</span>
-          <span id="stat-hours" class="text-lg font-bold text-slate-700">0</span>
-          <span class="text-xs text-slate-500">h</span>
-        </div>
-        <div class="mt-1.5 text-[11px] text-slate-400">
-          フル: <span id="stat-count-full">0</span> | AM: <span id="stat-count-am">0</span> | PM: <span id="stat-count-pm">0</span>
+        <!-- テーブル -->
+        <div class="overflow-x-auto">
+          <table class="w-full text-left border-collapse">
+            <thead>
+              <tr class="bg-slate-50 border-y border-slate-200 text-xs font-bold text-slate-600">
+                <th class="py-3 px-4 w-32">支給月</th>
+                <th class="py-3 px-4 w-56">総基本給 (基本＋残業＋交通費)</th>
+                <th class="py-3 px-4">備考・メモ</th>
+              </tr>
+            </thead>
+            <tbody id="annual-table-body" class="divide-y divide-slate-100 text-xs">
+              <!-- JSで1月〜12月分を生成 -->
+            </tbody>
+            <tfoot>
+              <tr class="bg-indigo-50/80 border-t-2 border-indigo-200 font-bold text-indigo-950 text-sm">
+                <td class="py-3.5 px-4">年間累計額</td>
+                <td class="py-3.5 px-4 text-indigo-900 text-base">
+                  ¥<span id="annual-total-actual">0</span>
+                </td>
+                <td class="py-3.5 px-4 text-xs font-semibold text-slate-600" id="annual-cap-remaining-text">
+                  <!-- JSで残り可能額を表示 -->
+                </td>
+              </tr>
+            </tfoot>
+          </table>
         </div>
       </div>
 
-      <div class="bg-white p-3.5 rounded-xl shadow-sm border border-slate-200">
-        <span class="text-xs font-semibold text-slate-500 block">総基本給 (土日割増込)</span>
-        <div class="mt-1">
-          <span class="text-xs text-slate-400">¥</span>
-          <span id="stat-base-pay" class="text-xl font-extrabold text-slate-800">0</span>
-        </div>
-        <div class="mt-1.5 text-[11px] text-slate-400">
-          平日給 + 休日割増(1.35倍)
-        </div>
-      </div>
-
-      <div class="bg-white p-3.5 rounded-xl shadow-sm border border-slate-200">
-        <span class="text-xs font-semibold text-rose-500 block">雇用保険料 (控除)</span>
-        <div class="mt-1">
-          <span class="text-xs text-rose-400">-¥</span>
-          <span id="stat-insurance" class="text-xl font-extrabold text-rose-600">0</span>
-        </div>
-        <div class="mt-1.5 text-[11px] text-slate-400">
-          基本給 × <span id="stat-insurance-rate-label">0.005</span>
-        </div>
-      </div>
-
-      <div class="bg-white p-3.5 rounded-xl shadow-sm border border-slate-200">
-        <span class="text-xs font-semibold text-slate-500 block">月額交通費</span>
-        <div class="mt-1">
-          <span class="text-xs text-slate-400">+¥</span>
-          <span id="stat-transport" class="text-xl font-extrabold text-slate-800">0</span>
-        </div>
-        <div class="mt-1.5 text-[11px] text-slate-400">
-          距離換算 (自動計算)
-        </div>
-      </div>
-
-      <div class="bg-indigo-600 text-white p-3.5 rounded-xl shadow-md border border-indigo-700 sm:col-span-2 md:col-span-1">
-        <span class="text-xs font-medium text-indigo-100 block">差引支給概算額</span>
-        <div class="mt-1">
-          <span class="text-xs text-indigo-200">¥</span>
-          <span id="stat-total-pay" class="text-xl font-black">0</span>
-        </div>
-        <div class="mt-1.5 text-[10px] text-indigo-200">
-          (基本給 - 保険料) + 交通費
-        </div>
-      </div>
-    </div>
-
-    <!-- カレンダーセクション -->
-    <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden print-shadow-none mb-6">
-      <div class="p-4 bg-slate-50 border-b border-slate-200 flex justify-between items-center">
-        <h3 id="calendar-title" class="font-bold text-slate-800 text-lg">2026年10月</h3>
-        <span class="text-xs text-slate-500">※ 土日の勤務は時給1.35倍で自動計算されます</span>
-      </div>
-
-      <div class="p-2 sm:p-4">
-        <div class="grid grid-cols-7 text-center font-bold text-xs sm:text-sm py-2 mb-1 border-b">
-          <div class="text-red-500">日</div>
-          <div class="text-slate-700">月</div>
-          <div class="text-slate-700">火</div>
-          <div class="text-slate-700">水</div>
-          <div class="text-slate-700">木</div>
-          <div class="text-slate-700">金</div>
-          <div class="text-blue-500">土</div>
-        </div>
-
-        <div id="calendar-days" class="grid grid-cols-7 gap-1 sm:gap-2">
-          <!-- JSで自動生成 -->
-        </div>
-      </div>
-    </div>
-
-    <!-- 一括操作 & 出力パネル -->
-    <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200 print-shadow-none">
-      <h2 class="text-base font-bold text-slate-700 mb-3 flex items-center gap-2 border-b pb-2">
-        <i class="fa-solid fa-wand-magic-sparkles text-indigo-600"></i> 一括操作 & データ出力
-      </h2>
-      <div class="flex flex-col sm:flex-row justify-between items-center gap-3 no-print">
-        <div class="flex flex-wrap items-center gap-2 w-full sm:w-auto">
-          <button id="btn-fill-weekdays" class="bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-medium py-2 px-4 rounded-lg border border-indigo-200 text-xs sm:text-sm transition flex items-center justify-center gap-2">
-            <i class="fa-solid fa-calendar-check"></i> 平日を一括でフルタイムにする
-          </button>
-          <button id="btn-clear-month" class="bg-slate-50 hover:bg-slate-100 text-slate-600 font-medium py-2 px-4 rounded-lg border border-slate-200 text-xs sm:text-sm transition flex items-center justify-center gap-2">
-            <i class="fa-solid fa-rotate-left"></i> 当月の入力をリセット
-          </button>
-        </div>
-
-        <div class="flex items-center gap-2 w-full sm:w-auto">
-          <button id="btn-export-csv" class="flex-1 sm:flex-none bg-emerald-600 hover:bg-emerald-700 text-white font-medium py-2 px-4 rounded-lg text-xs sm:text-sm transition flex items-center justify-center gap-1.5">
-            <i class="fa-solid fa-file-csv"></i> CSV出力
-          </button>
-          <button id="btn-print" onclick="window.print()" class="flex-1 sm:flex-none bg-slate-700 hover:bg-slate-800 text-white font-medium py-2 px-4 rounded-lg text-xs sm:text-sm transition flex items-center justify-center gap-1.5">
-            <i class="fa-solid fa-print"></i> 印刷 / PDF
-          </button>
-        </div>
-      </div>
     </div>
 
   </main>
 
+  <!-- ========================================== -->
+  <!-- 使い方 ポップアップ モーダル -->
+  <!-- ========================================== -->
+  <div id="modal-help" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex justify-center items-center p-4 hidden">
+    <div class="bg-white w-full max-w-lg rounded-2xl shadow-xl overflow-hidden flex flex-col max-h-[90vh]">
+      <div class="bg-indigo-700 text-white px-5 py-4 flex justify-between items-center">
+        <h3 class="font-bold text-base flex items-center gap-2">
+          <i class="fa-solid fa-circle-question text-amber-300"></i> アプリの使い方ガイド
+        </h3>
+        <button id="btn-close-help" class="text-indigo-200 hover:text-white text-xl font-bold p-1">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <div class="p-5 overflow-y-auto text-xs sm:text-sm text-slate-700 space-y-4 leading-relaxed">
+        <div class="bg-indigo-50/80 p-3 rounded-xl border border-indigo-100">
+          <h4 class="font-bold text-indigo-900 mb-1 flex items-center gap-1.5">
+            <i class="fa-solid fa-circle-info text-indigo-600"></i> 各項目の入力ルール
+          </h4>
+          <ul class="space-y-1.5 text-slate-600 ml-1">
+            <li><strong class="text-slate-800">基本給：</strong>契約の時給額を入力します。</li>
+            <li><strong class="text-slate-800">交通費：</strong>通勤の片道距離 (km) を入力すると、往復距離と単価から日額交通費を自動計算します。</li>
+            <li><strong class="text-slate-800">契約上限日数：</strong>交通費の月額上限の目安設定です。
+              <div class="text-[11px] text-indigo-800 mt-0.5 ml-3 font-medium">
+                ・週3日契約 ➔ 12日<br>
+                ・週4日契約 ➔ 16日<br>
+                ・週5日契約 ➔ 20日
+              </div>
+            </li>
+            <li><strong class="text-slate-800">残業時間：</strong>当月の総残業時間を入力（0.5時間＝30分単位）。通常時給で合算されます。</li>
+          </ul>
+        </div>
+
+        <div>
+          <h4 class="font-bold text-slate-800 mb-1 flex items-center gap-1.5">
+            <i class="fa-solid fa-1 text-indigo-600"></i> 日々のシフト選択
+          </h4>
+          <p class="text-slate-600">カレンダーの各日付で「フル・午前・午後・休」を選択すると、日額給与が自動計算されます。（土日は休日割増が反映されます）</p>
+        </div>
+
+        <div>
+          <h4 class="font-bold text-slate-800 mb-1 flex items-center gap-1.5">
+            <i class="fa-solid fa-2 text-indigo-600"></i> 扶養上限の年間管理
+          </h4>
+          <p class="text-slate-600">「総基本給（基本＋残業＋交通費）」カード内の<strong>「年間表へ転送」</strong>を押すと、該当月の金額がそのまま年間管理表に記録され、103万・130万円上限までの残り金額をひと目で確認できます。</p>
+        </div>
+      </div>
+
+      <div class="p-3 bg-slate-50 border-t border-slate-200 text-right">
+        <button id="btn-close-help-bottom" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-1.5 px-5 rounded-lg text-xs transition">
+          閉じる
+        </button>
+      </div>
+    </div>
+  </div>
+
   <script>
     // State
     let currentDate = new Date();
+    let selectedAnnualYear = new Date().getFullYear();
+    let targetAnnualCap = 1300000;
+
     let appData = {
       hourlyRate: 1260,
       holidayRate: 1.35,
@@ -258,11 +445,23 @@
       enableCap: true,
       maxDaysCap: 16,
       monthlyTransport: 0,
+      overtimeHours: {},
       hours: { full: 5.5, am: 3, pm: 2.5 },
-      workLogs: {}
+      workLogs: {},
+      annualLogs: {}
     };
 
     // DOM Elements
+    const tabBtnCalendar = document.getElementById('tab-btn-calendar');
+    const tabBtnAnnual = document.getElementById('tab-btn-annual');
+    const pageCalendar = document.getElementById('page-calendar');
+    const pageAnnual = document.getElementById('page-annual');
+
+    const modalHelp = document.getElementById('modal-help');
+    const btnOpenHelp = document.getElementById('btn-open-help');
+    const btnCloseHelp = document.getElementById('btn-close-help');
+    const btnCloseHelpBottom = document.getElementById('btn-close-help-bottom');
+
     const monthPicker = document.getElementById('month-picker');
     const calendarTitle = document.getElementById('calendar-title');
     const calendarDays = document.getElementById('calendar-days');
@@ -284,12 +483,75 @@
     const hoursFullInput = document.getElementById('hours-full');
     const hoursAmInput = document.getElementById('hours-am');
     const hoursPmInput = document.getElementById('hours-pm');
+    const overtimeHoursInput = document.getElementById('overtime-hours');
+
+    const annualYearSelect = document.getElementById('annual-year-select');
+    const annualTargetCapSelect = document.getElementById('annual-target-cap');
+    const annualTableBody = document.getElementById('annual-table-body');
 
     function init() {
       loadLocalStorage();
+      setupTabs();
+      setupHelpModal();
+      setupAnnualYearSelect();
       updateMonthPickerValue();
       bindEvents();
       render();
+    }
+
+    function setupHelpModal() {
+      const openModal = () => modalHelp.classList.remove('hidden');
+      const closeModal = () => modalHelp.classList.add('hidden');
+
+      btnOpenHelp.addEventListener('click', openModal);
+      btnCloseHelp.addEventListener('click', closeModal);
+      btnCloseHelpBottom.addEventListener('click', closeModal);
+
+      modalHelp.addEventListener('click', (e) => {
+        if (e.target === modalHelp) closeModal();
+      });
+    }
+
+    function setupTabs() {
+      tabBtnCalendar.addEventListener('click', () => {
+        pageCalendar.classList.remove('hidden');
+        pageAnnual.classList.add('hidden');
+        
+        tabBtnCalendar.className = 'px-3 py-1.5 rounded-md text-xs sm:text-sm font-bold transition bg-white text-indigo-900 shadow';
+        tabBtnAnnual.className = 'px-3 py-1.5 rounded-md text-xs sm:text-sm font-bold transition text-indigo-100 hover:text-white';
+      });
+
+      tabBtnAnnual.addEventListener('click', () => {
+        pageCalendar.classList.add('hidden');
+        pageAnnual.classList.remove('hidden');
+
+        tabBtnAnnual.className = 'px-3 py-1.5 rounded-md text-xs sm:text-sm font-bold transition bg-white text-indigo-900 shadow';
+        tabBtnCalendar.className = 'px-3 py-1.5 rounded-md text-xs sm:text-sm font-bold transition text-indigo-100 hover:text-white';
+        
+        renderAnnualTable();
+      });
+    }
+
+    function setupAnnualYearSelect() {
+      annualYearSelect.innerHTML = '';
+      const currentY = new Date().getFullYear();
+      for (let y = currentY - 2; y <= currentY + 3; y++) {
+        const opt = document.createElement('option');
+        opt.value = y;
+        opt.textContent = `${y}年`;
+        if (y === selectedAnnualYear) opt.selected = true;
+        annualYearSelect.appendChild(opt);
+      }
+
+      annualYearSelect.addEventListener('change', (e) => {
+        selectedAnnualYear = Number(e.target.value);
+        renderAnnualTable();
+      });
+
+      annualTargetCapSelect.addEventListener('change', (e) => {
+        targetAnnualCap = Number(e.target.value);
+        renderAnnualTable();
+      });
     }
 
     function bindEvents() {
@@ -364,24 +626,50 @@
         calculateSummary();
       });
 
+      overtimeHoursInput.addEventListener('input', (e) => {
+        const monthKey = getCurrentMonthKey();
+        appData.overtimeHours[monthKey] = Number(e.target.value) || 0;
+        saveLocalStorage();
+        calculateSummary();
+      });
+
+      document.getElementById('btn-sync-to-annual').addEventListener('click', syncCurrentMonthToAnnual);
+
       document.getElementById('btn-fill-weekdays').addEventListener('click', fillWeekdays);
       document.getElementById('btn-clear-month').addEventListener('click', clearCurrentMonth);
       document.getElementById('btn-export-csv').addEventListener('click', exportCSV);
+    }
+
+    function getCurrentMonthKey() {
+      const y = currentDate.getFullYear();
+      const m = String(currentDate.getMonth() + 1).padStart(2, '0');
+      return `${y}-${m}`;
+    }
+
+    function syncCurrentMonthToAnnual() {
+      const key = getCurrentMonthKey();
+      const grossPay = Number(document.getElementById('stat-gross-pay').textContent.replace(/,/g, '')) || 0;
+
+      if (!appData.annualLogs[key]) {
+        appData.annualLogs[key] = { actual: grossPay, memo: '' };
+      } else {
+        appData.annualLogs[key].actual = grossPay;
+      }
+
+      saveLocalStorage();
+      alert(`${currentDate.getFullYear()}年${currentDate.getMonth() + 1}月の総基本給（¥${grossPay.toLocaleString()}）を年間管理表に転送しました！`);
     }
 
     function recalculateTransport() {
       const actualDays = Number(document.getElementById('stat-days').textContent) || 0;
       transportDaysInput.value = actualDays;
 
-      // 1日あたり交通費 = 片道km * 2 * 単価
       const dayPay = Math.round(appData.oneWayKm * 2 * appData.kmRate);
       calcTransportDayPayLabel.textContent = `1日あたり: ${dayPay.toLocaleString()}円`;
 
-      // 上限金額 (片道×2×単価×契約上限日数)
       const maxAmount = Math.round(dayPay * appData.maxDaysCap);
       maxAmountLabel.textContent = maxAmount.toLocaleString();
 
-      // 実出勤日数に基づくストッパー計算
       let effectiveDays = actualDays;
       if (appData.enableCap && actualDays > appData.maxDaysCap) {
         effectiveDays = appData.maxDaysCap;
@@ -428,8 +716,12 @@
       hoursAmInput.value = appData.hours.am;
       hoursPmInput.value = appData.hours.pm;
 
+      const monthKey = getCurrentMonthKey();
+      overtimeHoursInput.value = appData.overtimeHours[monthKey] || 0;
+
       renderCalendar();
       calculateSummary();
+      renderAnnualTable();
     }
 
     function renderCalendar() {
@@ -580,6 +872,10 @@
         }
       }
 
+      const monthKey = getCurrentMonthKey();
+      const overtimeHours = appData.overtimeHours[monthKey] || 0;
+      const overtimePay = Math.round(appData.hourlyRate * overtimeHours);
+
       document.getElementById('stat-days').textContent = totalDays;
       document.getElementById('stat-hours').textContent = totalHours;
       document.getElementById('stat-count-full').textContent = countFull;
@@ -588,15 +884,120 @@
 
       recalculateTransport();
 
-      const insuranceFee = Math.round(basePayTotal * appData.insuranceRate);
       const transportTotal = appData.monthlyTransport;
-      const totalPay = (basePayTotal - insuranceFee) + transportTotal;
+      const grossPayTotal = basePayTotal + overtimePay + transportTotal;
+      const insuranceFee = Math.round(grossPayTotal * appData.insuranceRate);
+      const totalPay = grossPayTotal - insuranceFee;
 
       document.getElementById('stat-base-pay').textContent = basePayTotal.toLocaleString();
+      document.getElementById('stat-overtime-pay').textContent = overtimePay.toLocaleString();
+      document.getElementById('stat-overtime-hours-label').textContent = overtimeHours;
+      document.getElementById('stat-transport').textContent = transportTotal.toLocaleString();
+      document.getElementById('stat-gross-pay').textContent = grossPayTotal.toLocaleString();
       document.getElementById('stat-insurance').textContent = insuranceFee.toLocaleString();
       document.getElementById('stat-insurance-rate-label').textContent = appData.insuranceRate;
-      document.getElementById('stat-transport').textContent = transportTotal.toLocaleString();
       document.getElementById('stat-total-pay').textContent = totalPay.toLocaleString();
+    }
+
+    // ==========================================
+    // 年間給与管理表 レンダリング & 合算計算
+    // ==========================================
+    function renderAnnualTable() {
+      annualTableBody.innerHTML = '';
+      let totalActual = 0;
+
+      for (let m = 1; m <= 12; m++) {
+        const monthStr = String(m).padStart(2, '0');
+        const key = `${selectedAnnualYear}-${monthStr}`;
+        const log = appData.annualLogs[key] || { actual: 0, memo: '' };
+
+        totalActual += Number(log.actual) || 0;
+
+        const tr = document.createElement('tr');
+        tr.className = 'hover:bg-slate-50 transition';
+
+        tr.innerHTML = `
+          <td class="py-2.5 px-4 font-bold text-slate-700">${m}月支給</td>
+          <td class="py-2.5 px-4">
+            <div class="relative w-44">
+              <span class="absolute left-2.5 top-1.5 text-slate-400 text-xs font-semibold">¥</span>
+              <input type="number" value="${log.actual || 0}" min="0" 
+                     class="annual-actual-input w-full pl-6 pr-2 py-1 border rounded font-bold text-indigo-900 bg-indigo-50/20 focus:ring-2 focus:ring-indigo-500 focus:bg-white text-xs" 
+                     data-key="${key}">
+            </div>
+          </td>
+          <td class="py-2.5 px-4">
+            <input type="text" value="${log.memo || ''}" 
+                   class="annual-memo-input w-full px-2.5 py-1 border rounded text-xs text-slate-700 focus:ring-2 focus:ring-indigo-500" 
+                   data-key="${key}">
+          </td>
+        `;
+
+        annualTableBody.appendChild(tr);
+      }
+
+      document.getElementById('annual-total-actual').textContent = totalActual.toLocaleString();
+
+      const remaining = targetAnnualCap - totalActual;
+      const capLabel = (targetAnnualCap / 10000) + '万円';
+      const remainingEl = document.getElementById('annual-cap-remaining-text');
+
+      if (remaining >= 0) {
+        remainingEl.innerHTML = `上限(${capLabel})まであと <span class="text-emerald-600 font-bold text-sm">¥${remaining.toLocaleString()}</span> です`;
+      } else {
+        remainingEl.innerHTML = `上限(${capLabel})を <span class="text-rose-600 font-bold text-sm">¥${Math.abs(remaining).toLocaleString()}</span> 超過しています`;
+      }
+
+      document.querySelectorAll('.annual-actual-input').forEach(input => {
+        input.addEventListener('input', (e) => {
+          const k = e.target.dataset.key;
+          const val = Number(e.target.value) || 0;
+
+          if (!appData.annualLogs[k]) {
+            appData.annualLogs[k] = { actual: 0, memo: '' };
+          }
+          appData.annualLogs[k].actual = val;
+
+          saveLocalStorage();
+          updateAnnualTotalOnly();
+        });
+      });
+
+      document.querySelectorAll('.annual-memo-input').forEach(input => {
+        input.addEventListener('input', (e) => {
+          const k = e.target.dataset.key;
+          const val = e.target.value;
+
+          if (!appData.annualLogs[k]) {
+            appData.annualLogs[k] = { actual: 0, memo: '' };
+          }
+          appData.annualLogs[k].memo = val;
+
+          saveLocalStorage();
+        });
+      });
+    }
+
+    function updateAnnualTotalOnly() {
+      let totalActual = 0;
+      for (let m = 1; m <= 12; m++) {
+        const monthStr = String(m).padStart(2, '0');
+        const key = `${selectedAnnualYear}-${monthStr}`;
+        const log = appData.annualLogs[key] || { actual: 0 };
+        totalActual += Number(log.actual) || 0;
+      }
+
+      document.getElementById('annual-total-actual').textContent = totalActual.toLocaleString();
+
+      const remaining = targetAnnualCap - totalActual;
+      const capLabel = (targetAnnualCap / 10000) + '万円';
+      const remainingEl = document.getElementById('annual-cap-remaining-text');
+
+      if (remaining >= 0) {
+        remainingEl.innerHTML = `上限(${capLabel})まであと <span class="text-emerald-600 font-bold text-sm">¥${remaining.toLocaleString()}</span> です`;
+      } else {
+        remainingEl.innerHTML = `上限(${capLabel})を <span class="text-rose-600 font-bold text-sm">¥${Math.abs(remaining).toLocaleString()}</span> 超過しています`;
+      }
     }
 
     function fillWeekdays() {
@@ -663,15 +1064,22 @@
 
       const totalHours = Number(document.getElementById('stat-hours').textContent);
       const basePay = Number(document.getElementById('stat-base-pay').textContent.replace(/,/g, ''));
-      const insurance = Number(document.getElementById('stat-insurance').textContent.replace(/,/g, ''));
+      const monthKey = getCurrentMonthKey();
+      const overtimeHours = appData.overtimeHours[monthKey] || 0;
+      const overtimePay = Math.round(appData.hourlyRate * overtimeHours);
       const transport = appData.monthlyTransport;
-      const totalPay = (basePay - insurance) + transport;
+      const grossPay = basePay + overtimePay + transport;
+      const insurance = Number(document.getElementById('stat-insurance').textContent.replace(/,/g, ''));
+      const totalPay = grossPay - insurance;
 
       csv += `\n集計,,,,\n`;
       csv += `総労働時間,,,,${totalHours} 時間\n`;
-      csv += `総基本給(土日割増込),,,,${basePay} 円\n`;
-      csv += `雇用保険料(控除),,,,-${insurance} 円\n`;
+      csv += `基本給(土日割増込),,,,${basePay} 円\n`;
+      csv += `残業時間,,,,${overtimeHours} 時間\n`;
+      csv += `残業手当(通常時給),,,,${overtimePay} 円\n`;
       csv += `月額交通費(上限制御済),,,,${transport} 円\n`;
+      csv += `総基本給(基本+残業+交通費),,,,${grossPay} 円\n`;
+      csv += `雇用保険料(控除),,,,-${insurance} 円\n`;
       csv += `差引支給概算額,,,,${totalPay} 円\n`;
 
       const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
